@@ -1,7 +1,13 @@
-package pro.sky.telegrambot.Entity;
+package pro.sky.telegrambot.entity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+
+/**
+ * Определение класса сущности хранимой в БД.
+ * Класс содержит четыре поля: "id", "chatId", "message" и "timeSend".
+ * Геттеры и сеттеры используются для установки и получения значений полей.
+ */
 
 @Entity
 public class NotificationTask {
