@@ -54,7 +54,8 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
      * Получаем входящее сообщение от пользователя и сохраняем его в переменную incomeMessage.
      * Записываем информацию об обновлении в лог с помощью logger.info().
      * Если входящее сообщение не является пустым и равно /start, то бот отправляем приветственное сообщение.
-     * Иначе, используя регулярное выражение, извлекаем из входящего сообщения дату и время отправки уведомления, текст сообщения и сохраняем все это в объекте notificationTask.
+     * Иначе, если в бот переданы фото,видео, аудио или стикер - бот завершает работу в чате с заданным сообщением об ошибке переданного типа даных
+     * Если не получили ошибку, используя регулярное выражение, извлекаем из входящего сообщения дату и время отправки уведомления, текст сообщения и сохраняем все это в объекте notificationTask.
      * Объект notificationTask сохраняется в хранилище задач уведомлений repository.
      * Метод process() возвращает UpdatesListener.CONFIRMED_UPDATES_ALL, подтверждение получения и обработки всех обновлений.
      */
@@ -62,13 +63,22 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public int process(List<Update> updates) {
 
         updates.forEach(update -> {
-            SendMessage wellcomeMessage = new SendMessage(update.message().chat().id(), "Добрый дан!");
+            SendMessage wellcomeMessage = new SendMessage(update.message().chat().id(), "Добрый день, игровой бот приветствует тебя!");
             String incomeMessage = update.message().text();
             logger.info("Processing update: {}", update);
 
             if (incomeMessage != null && update.message().text().equals("/start")) {
                 telegramBot.execute(wellcomeMessage);
             } else {
+                if (update.message().photo() != null
+                        || update.message().sticker() != null
+                        || update.message().video() != null
+                        || update.message().audio() != null) {
+                    SendMessage errorMessage = new SendMessage(update.message().chat().id(),
+                            "Извините, но я умею обрабатывать толко текст.");
+                    telegramBot.execute(errorMessage);
+                    return;
+                }
                 Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
                 NotificationTask notificationTask = new NotificationTask();
                 assert incomeMessage != null;
